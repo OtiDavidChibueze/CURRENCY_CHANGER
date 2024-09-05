@@ -1,35 +1,73 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useEffect, useState } from "react";
 
-function App() {
-  const [count, setCount] = useState(0)
-
+export default function App() {
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div>
+      <CurrencyChanger />
+    </div>
+  );
 }
 
-export default App
+function CurrencyChanger() {
+  const [amount, setAmount] = useState("");
+
+  const [fromCur, setFromCur] = useState("EUR");
+  const [toCur, setToCur] = useState("USD");
+  const [result, setResult] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    async function handleCurrencyChange() {
+      setIsLoading(true);
+      const res = await fetch(
+        `https://api.frankfurter.app/latest?amount=${amount}&from=${fromCur}&to=${toCur} `
+      );
+      const data = await res.json();
+      console.log(data.rates["USD"]);
+
+      setResult(data.rates[toCur]);
+      setIsLoading(false);
+    }
+
+    if (fromCur === toCur) return setResult(amount);
+
+    handleCurrencyChange();
+  }, [amount, fromCur, toCur]);
+
+  return (
+    <div>
+      <input
+        type="text"
+        value={amount}
+        onChange={(e) => setAmount(Number(e.target.value))}
+        disabled={isLoading}
+      />
+
+      <select
+        value={fromCur}
+        onChange={(e) => setFromCur(e.target.value)}
+        disabled={isLoading}
+      >
+        <option value="EUR">EUR</option>
+        <option value="INR">INR</option>
+        <option value="CAD">CAD</option>
+        <option value="USD">USD</option>
+      </select>
+
+      <select
+        value={toCur}
+        onChange={(e) => setToCur(e.target.value)}
+        disabled={isLoading}
+      >
+        <option value="EUR">EUR</option>
+        <option value="INR">INR</option>
+        <option value="CAD">CAD</option>
+        <option value="USD">USD</option>
+      </select>
+
+      <p>
+        {result} {toCur}
+      </p>
+    </div>
+  );
+}
